@@ -1,6 +1,6 @@
 # chc-voice
 
-![chc-voice 主界面](docs/ui-main.png)
+<p align="center"><img src="docs/ui-main.png" width="420" alt="chc-voice 主界面"></p>
 
 macOS 本地语音跟读器：把真实麦克风里的中文，经百炼流式 ASR 识别后，用 Fish Audio 指定音色念出来，写入名为 **chc-voice** 的虚拟麦克风，供微信、游戏、Zoom、Discord 等软件当作麦克风使用。
 
