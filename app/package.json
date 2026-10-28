@@ -1,0 +1,14 @@
+{
+  "name": "chc-voice",
+  "version": "0.1.0",
+  "private": true,
+  "description": "chc-voice desktop shell (the UI is served by the local Python backend)",
+  "main": "main.js",
+  "scripts": {
+    "start": "env -u ELECTRON_RUN_AS_NODE electron .",
+    "dev": "env -u ELECTRON_RUN_AS_NODE electron ."
+  },
+  "devDependencies": {
+    "electron": "44.3.0"
+  }
+}

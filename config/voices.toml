@@ -1,0 +1,9 @@
+# Fish Audio 音色配置（首次启动会复制到 ~/Library/Application Support/chc-voice/voices.toml）
+# 音色从 Fish Audio 控制台复制 voice_id。中文音色不能为空，否则模式 A 不可用。
+
+[fish]
+model = "drama-3"
+zh_voice_id = "fbe02f8306fc4d3d915e9871722a39d5"
+zh_voice_name = "嘉岚3.0"
+ja_voice_id = "0136810d4c884f848e62ae26edafba82"
+ja_voice_name = "拉姆（Ramlethal）"

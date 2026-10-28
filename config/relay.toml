@@ -1,0 +1,46 @@
+# chc-voice 运行配置（首次启动会复制到 ~/Library/Application Support/chc-voice/relay.toml）
+# 这里不放任何 API key。key 只存在 macOS Keychain。
+
+[audio]
+# 真实输入设备名；空字符串表示系统默认输入
+input_device = ""
+# 消费端应选择的输入设备；优先 Aggregate Device，缺失时回退 BlackHole 2ch
+virtual_device = "chc-voice"
+blackhole_device = "BlackHole 2ch"
+output_gain = 0.8       # 写入虚拟麦克风的音量，0.0 - 1.5
+monitor_gain = 0.0      # 耳机监听，默认关闭
+mic_gain = 1.0          # 真实麦克风输入增益，0.0 - 3.0
+monitor_enabled = false
+
+[translate]
+# casual / neutral / polite / keigo
+tone = "casual"
+
+[api]
+# 模式 B 的翻译 LLM（OpenAI Chat Completions 兼容）
+llm_base_url = "https://api.deepseek.com/v1"
+llm_model = "deepseek-chat"
+# 百炼实时语音识别
+bailian_model = "qwen-audio-3.1-asr-flash-streaming"
+
+[commit.zh_direct]
+stable_ms = 250
+min_chars = 6
+max_chars = 40
+# 0 = 不在停顿处切句；只在标点/最终结果/最大长度时提交，优先保证完整语义
+pause_flush_ms = 0
+
+[commit.zh_to_ja]
+stable_ms = 350
+min_chars = 10
+max_chars = 60
+pause_flush_ms = 0
+
+[network]
+# Fish Audio 在当前网络需要本地代理；留空表示直连
+fish_proxy = ""
+
+[ui]
+mode = "zh_direct"
+show_transcript = true
+show_translation = true

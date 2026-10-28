@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>chc-voice</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="window">
+    <header class="titlebar">
+      <div class="brand">chc-voice</div>
+      <button id="settingsBtn" class="icon" title="设置" aria-label="设置">⚙</button>
+    </header>
+
+    <section class="status">
+      <span id="stateDot" class="dot idle"></span>
+      <span id="stateLabel">就绪</span>
+      <span id="stateDetail" class="detail"></span>
+      <span id="levelHint" class="level-hint"></span>
+    </section>
+
+    <section class="modes" role="tablist" aria-label="模式">
+      <button class="mode" data-mode="zh_direct" role="tab">中文直出</button>
+      <button class="mode" data-mode="zh_to_ja" role="tab">中文 → 日语</button>
+    </section>
+
+    <section class="actions">
+      <button id="startBtn" class="primary">开始</button>
+      <button id="stopBtn" class="secondary">停止</button>
+    </section>
+
+    <section class="volume">
+      <label for="volume">音量</label>
+      <input id="volume" type="range" min="0" max="150" step="1" value="80">
+      <span id="volumeVal">80%</span>
+      <div class="meter" title="虚拟麦克风输出电平"><span id="outMeter"></span></div>
+      <div class="meter input" title="麦克风输入电平"><span id="inMeter"></span></div>
+    </section>
+
+    <section class="meta">
+      <div class="row"><span>麦克风</span><b id="micName">系统默认</b></div>
+      <div class="row"><span>虚拟麦克风</span><b id="vmName">chc-voice</b><span id="vmCheck" class="check">…</span></div>
+    </section>
+
+    <button id="testBtn" class="wide">测试虚拟麦克风</button>
+    <button id="panicBtn" class="wide small panic hidden">紧急静音</button>
+
+    <section id="transcript" class="transcript" aria-live="polite"></section>
+
+    <div id="banner" class="banner hidden" role="alert"></div>
+  </main>
+
+  <aside id="drawer" class="drawer" aria-hidden="true">
+    <header class="drawer-head">
+      <h2>设置</h2>
+      <button id="closeDrawer" class="icon" aria-label="关闭">×</button>
+    </header>
+
+    <div class="drawer-body">
+      <section class="group">
+        <h3>API</h3>
+        <div class="field key-row" data-service="asr">
+          <div class="key-head"><span>ASR API Key</span><span class="key-status" id="status-asr">未配置</span></div>
+          <div class="key-actions">
+            <input type="password" id="key-asr" placeholder="粘贴百炼 key" autocomplete="off">
+            <button class="mini" data-save-key="asr">保存</button>
+            <button class="mini ghost" data-test-key="asr">测试</button>
+            <button class="mini danger" data-del-key="asr">删除</button>
+          </div>
+        </div>
+        <div class="field key-row" data-service="tts">
+          <div class="key-head"><span>Fish API Key</span><span class="key-status" id="status-tts">未配置</span></div>
+          <div class="key-actions">
+            <input type="password" id="key-tts" placeholder="粘贴 Fish Audio key" autocomplete="off">
+            <button class="mini" data-save-key="tts">保存</button>
+            <button class="mini ghost" data-test-key="tts">测试</button>
+            <button class="mini danger" data-del-key="tts">删除</button>
+          </div>
+        </div>
+        <div class="field key-row" data-service="llm">
+          <div class="key-head"><span>翻译 LLM Key</span><span class="key-status" id="status-llm">未配置</span></div>
+          <div class="key-actions">
+            <input type="password" id="key-llm" placeholder="粘贴 Chat LLM key" autocomplete="off">
+            <button class="mini" data-save-key="llm">保存</button>
+            <button class="mini ghost" data-test-key="llm">测试</button>
+            <button class="mini danger" data-del-key="llm">删除</button>
+          </div>
+        </div>
+        <div class="fineprint">key 只写入 macOS Keychain；界面只显示后四位。</div>
+      </section>
+
+      <section class="group">
+        <h3>音色</h3>
+        <label class="field">
+          <span>中文音色</span>
+          <select id="zhVoice"><option value="">加载中…</option></select>
+        </label>
+        <label class="field">
+          <span>日语音色</span>
+          <select id="jaVoice"><option value="">加载中…</option></select>
+        </label>
+        <label class="field">
+          <span>Fish 模型</span>
+          <select id="fishModel">
+            <option value="drama-3">drama-3</option>
+            <option value="s2.1-pro">s2.1-pro</option>
+            <option value="s2.1-pro-free">s2.1-pro-free</option>
+            <option value="s2-pro">s2-pro</option>
+            <option value="s1">s1</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>日语语气</span>
+          <select id="translationTone">
+            <option value="casual">口语（タメ口）</option>
+            <option value="neutral">自然普通体</option>
+            <option value="polite">礼貌（です・ます）</option>
+            <option value="keigo">商务敬语</option>
+          </select>
+        </label>
+        <div class="fineprint"><button id="refreshVoices" class="link">刷新 Fish 音色列表</button></div>
+      </section>
+
+      <section class="group">
+        <h3>音频</h3>
+        <label class="field">
+          <span>输入麦克风</span>
+          <select id="inputDevice"><option value="">系统默认</option></select>
+        </label>
+        <label class="field">
+          <span>虚拟麦克风</span>
+          <select id="virtualDevice">
+            <option value="chc-voice">chc-voice</option>
+            <option value="BlackHole 2ch">BlackHole 2ch</option>
+          </select>
+        </label>
+        <label class="field range">
+          <span>总音量</span>
+          <input id="outputGain" type="range" min="0" max="150" value="80">
+          <b id="outputGainVal">80%</b>
+        </label>
+        <label class="field range">
+          <span>监听音量</span>
+          <input id="monitorGain" type="range" min="0" max="150" value="0">
+          <b id="monitorGainVal">0%</b>
+        </label>
+        <label class="field range">
+          <span>输入增益</span>
+          <input id="micGain" type="range" min="0" max="300" value="100">
+          <b id="micGainVal">100%</b>
+        </label>
+        <label class="field inline">
+          <input id="monitorEnabled" type="checkbox">
+          <span>耳机监听（默认关闭，外放会形成反馈）</span>
+        </label>
+        <div id="vmGuidance" class="fineprint warn hidden"></div>
+        <button id="createVm" class="wide small hidden">创建虚拟麦克风</button>
+      </section>
+
+      <section class="group advanced">
+        <h3 id="advancedHead" class="collapsible">高级 <span>▸</span></h3>
+        <div id="advancedBody" class="collapsed">
+          <div class="two">
+            <label class="field"><span>模式 A 稳定前缀 (ms)</span><input id="stableA" type="number" min="80" max="1500" value="250"></label>
+            <label class="field"><span>模式 A 最小提交 (字)</span><input id="minA" type="number" min="1" max="30" value="6"></label>
+          </div>
+          <div class="two">
+            <label class="field"><span>模式 B 稳定前缀 (ms)</span><input id="stableB" type="number" min="80" max="1500" value="350"></label>
+            <label class="field"><span>模式 B 最小提交 (字)</span><input id="minB" type="number" min="1" max="30" value="10"></label>
+          </div>
+          <label class="field inline"><input id="showTranscript" type="checkbox" checked><span>显示识别文本</span></label>
+          <label class="field inline"><input id="showTranslation" type="checkbox" checked><span>显示翻译文本</span></label>
+          <button id="saveAdvanced" class="wide small">保存高级设置</button>
+          <div class="fineprint">修改提交参数后需要重新开始才生效。</div>
+        </div>
+      </section>
+    </div>
+  </aside>
+
+  <div id="scrim" class="scrim hidden"></div>
+  <script src="/app.js"></script>
+</body>
+</html>
